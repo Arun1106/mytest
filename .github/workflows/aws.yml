@@ -26,6 +26,7 @@ jobs:
     name: terraform_apply
     needs: terraform_plan
     runs-on: ubuntu-latest
+    environment: 'prod'
     steps:
     - name: terraform init
       run: terraform init
