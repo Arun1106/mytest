@@ -9,3 +9,7 @@ jobs:
     steps:
     - name: checkout-stage
       uses: actions/checkout@v4.1.2
+    - name: terraform setup
+      uses: hashicorp/setup-terraform@v2.0.3
+    - name: terraform fmt
+      run: terraform fmt
