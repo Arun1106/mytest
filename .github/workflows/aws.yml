@@ -4,7 +4,8 @@ on:
   push:
     branches: ["main"]
 jobs:
-  terraform:
+  terraform_plan:
+    name: terraform_plan
     runs-on: ubuntu-latest
     steps:
     - name: checkout-stage
@@ -21,3 +22,10 @@ jobs:
       run: terraform init
     - name: terraform plan
       run: terraform plan
+  terraform_apply:
+    name: terraform_apply
+    needs: terraform_plan
+    runs-on: ubuntu-latest
+    steps:
+    - name: check
+      run: ls
