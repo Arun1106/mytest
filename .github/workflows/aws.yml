@@ -1,0 +1,11 @@
+name: Terraform
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout-stage
+      uses: actions/checkout@V4.1.2
