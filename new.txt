@@ -1,0 +1,40 @@
+resource "aws_lambda_permission" "lambda_permission" {
+  for_each = toset(var.lambda_function_name)
+  statement_id  = "${var.api_name}-APIInvoke-${each.key}"
+  action        = "lambda:InvokeFunction"
+  function_name = each.value
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.demo.execution_arn}/*"
+}
+
+variable "lambda_function_name" {  
+}
+
+module "api" {
+  source = "./modules"
+  for_each = {for api in var.apilist : api.api_name => api}
+  body = templatefile("${path.module}/${each.value.config}", {placeholder = local.processed_placeholders[each.key]})
+  api_name = each.value.api_name
+  lambda_function_name = local.lambda_function_name[each.key]
+  authorizer_credentials = aws_iam_role.invocation_role.arn
+  authorizer_uri =  try("arn:aws:apigateway:${each.value.region}:lambda:path/2015-03-31/functions/${data.aws_lambda_function.existing.arn}/invocations", null)
+}
+
+locals {
+  processed_placeholders = {
+    for api in var.apilist : api.api_name => {
+      for key, value in api.placeholder : key => (
+        startswith(key, "lambda") ? 
+        "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/arn:aws:lambda:${data.aws_region.current.name}:818363358821:function:${value}/invocations"
+        : value
+      )
+    }
+  }
+ lambda_function_name = {
+    for api in var.apilist : api.api_name => [
+      for key, value in api.placeholder : 
+      value if startswith(key, "lambda")
+    ]
+  }
+
+}
